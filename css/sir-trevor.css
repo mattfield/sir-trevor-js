@@ -129,7 +129,7 @@ body { margin: 0; font-size: 1em; line-height: 1.4; }
   background-image: url(../img/sir-trevor/icons/block_editor_text.png);
 }
 
-.sir-trevor-button.new-list {
+.sir-trevor-button.new-list, .sir-trevor-button.new-ordered-list {
   background-image: url(../img/sir-trevor/icons/block_editor_list.png);
 }
 
