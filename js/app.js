@@ -2,7 +2,7 @@
 
   var editor = new SirTrevor.Editor({
     el: $('.sir-trevor'),
-    blockTypes: ['Text', 'Ul', 'Ol', 'Image', 'Quote', 'Tweet', 'Gallery']
+    blockTypes: ['Gallery2']
   });
 
   $('form').on('submit', function(e){
