@@ -79,57 +79,6 @@ SirTrevor.Blocks.Gallery2 = SirTrevor.Block.extend({
     list.data('block', item);
 
     this.$$('ul').append(list);
-
-    // Make it sortable
-    //list
-    //.dropArea()
-    //.bind('dragstart', _.bind(function(ev){
-      //var item = $(ev.target);
-      //ev.originalEvent.dataTransfer.setData('Text', item.parent().attr('id'));
-      //item.parent().addClass('dragging');
-    //}, this))
-
-    //.bind('drag', _.bind(function(ev){
-
-    //}, this))
-
-    //.bind('dragend', _.bind(function(ev){
-      //var item = $(ev.target);
-      //item.parent().removeClass('dragging');
-    //}, this))
-
-    //.bind('dragover', _.bind(function(ev){
-      //var item = $(ev.target);
-      //item.parents('li').addClass('dragover');
-    //}, this))
-
-    //.bind('dragleave', _.bind(function(ev){
-      //var item = $(ev.target);
-      //item.parents('li').removeClass('dragover');
-    //}, this))
-
-    //.bind('drop', _.bind(function(ev){
-
-      //var item = $(ev.target),
-      //parent = item.parent();
-
-      //item = (item.hasClass('gallery-item') ? item : parent);    
-
-      //this.$$('ul li.dragover').removeClass('dragover');
-
-      //// Get the item
-      //var target = $('#' + ev.originalEvent.dataTransfer.getData("text/plain"));
-
-      //if(target.attr('id') === item.attr('id')) return false;
-
-      //if (target.length > 0 && target.hasClass('gallery-item')) {
-        //item.before(target);
-      //}
-
-      //// Reindex the data
-      //this.reindexData();
-
-    //}, this));
   },
 
   onBlockRender: function(){
