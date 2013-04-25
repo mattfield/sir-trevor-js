@@ -1275,7 +1275,8 @@
     
   });
   var dropzone_templ = "<p>Drop images here</p><div class=\"input submit\"><input type=\"file\" multiple=\"multiple\" /></div><button>...or choose file(s)</button>";
-  var text_tmpl = '<div class="filth" contenteditable=true />';
+  var text_tmpl = '<div class="filth" contenteditable="true" />';
+  var new_item_tmpl ='<div class="add-item"><a href="#">Click to add a new item</a>';
   
   SirTrevor.Blocks.Gallery2 = SirTrevor.Block.extend({ 
     title: "Gallery2",
@@ -1296,6 +1297,25 @@
         // Show the dropzone too
         this.$dropzone.show();
       }
+    },
+  
+    renderNewItem: function(item){
+      var listEl = $('<li>', {
+        id: _.uniqueId('gallery-item'),
+        class: 'gallery-item'
+      });
+  
+      var description = $(text_tmpl).text(item.data.text);
+      description.on('blur', function() { 
+        item.data.text = description.text();
+      });
+  
+      //description.data('block', item);
+      console.log(description);
+  
+      this.$$('ul').append(description);
+  
+      console.log('new item rendered:', item, description);
     },
   
     renderGalleryThumb: function(item) {
@@ -1337,64 +1357,91 @@
       this.$$('ul').append(list);
   
       // Make it sortable
-      list
-      .dropArea()
-      .bind('dragstart', _.bind(function(ev){
-        var item = $(ev.target);
-        ev.originalEvent.dataTransfer.setData('Text', item.parent().attr('id'));
-        item.parent().addClass('dragging');
-      }, this))
+      //list
+      //.dropArea()
+      //.bind('dragstart', _.bind(function(ev){
+        //var item = $(ev.target);
+        //ev.originalEvent.dataTransfer.setData('Text', item.parent().attr('id'));
+        //item.parent().addClass('dragging');
+      //}, this))
   
-      .bind('drag', _.bind(function(ev){
+      //.bind('drag', _.bind(function(ev){
   
-      }, this))
+      //}, this))
   
-      .bind('dragend', _.bind(function(ev){
-        var item = $(ev.target);
-        item.parent().removeClass('dragging');
-      }, this))
+      //.bind('dragend', _.bind(function(ev){
+        //var item = $(ev.target);
+        //item.parent().removeClass('dragging');
+      //}, this))
   
-      .bind('dragover', _.bind(function(ev){
-        var item = $(ev.target);
-        item.parents('li').addClass('dragover');
-      }, this))
+      //.bind('dragover', _.bind(function(ev){
+        //var item = $(ev.target);
+        //item.parents('li').addClass('dragover');
+      //}, this))
   
-      .bind('dragleave', _.bind(function(ev){
-        var item = $(ev.target);
-        item.parents('li').removeClass('dragover');
-      }, this))
+      //.bind('dragleave', _.bind(function(ev){
+        //var item = $(ev.target);
+        //item.parents('li').removeClass('dragover');
+      //}, this))
   
-      .bind('drop', _.bind(function(ev){
+      //.bind('drop', _.bind(function(ev){
   
-        var item = $(ev.target),
-        parent = item.parent();
+        //var item = $(ev.target),
+        //parent = item.parent();
   
-        item = (item.hasClass('gallery-item') ? item : parent);    
+        //item = (item.hasClass('gallery-item') ? item : parent);    
   
-        this.$$('ul li.dragover').removeClass('dragover');
+        //this.$$('ul li.dragover').removeClass('dragover');
   
-        // Get the item
-        var target = $('#' + ev.originalEvent.dataTransfer.getData("text/plain"));
+        //// Get the item
+        //var target = $('#' + ev.originalEvent.dataTransfer.getData("text/plain"));
   
-        if(target.attr('id') === item.attr('id')) return false;
+        //if(target.attr('id') === item.attr('id')) return false;
   
-        if (target.length > 0 && target.hasClass('gallery-item')) {
-          item.before(target);
-        }
+        //if (target.length > 0 && target.hasClass('gallery-item')) {
+          //item.before(target);
+        //}
   
-        // Reindex the data
-        this.reindexData();
+        //// Reindex the data
+        //this.reindexData();
   
-      }, this));
+      //}, this));
     },
   
     onBlockRender: function(){
+      var block = this;
+  
       // We need to setup this block for reordering
       /* Setup the upload button */
       // this.$dropzone.find('button').bind('click', halt);
       this.$dropzone.find('input').on('change', _.bind(function(ev){
         this.onDrop(ev.currentTarget);
       }, this));
+  
+      // Add the new item button
+      this.$el.prepend(new_item_tmpl);
+  
+      $('.add-item').on('click', function(e){
+        e.preventDefault();
+  
+        block.$editor.show();
+  
+        var dataStruct = block.getData();
+        var data = { type: 'list-element', data: { text: "" } };
+  
+        // Add to our struct
+        if (!_.isArray(dataStruct)) {
+          dataStruct = [];
+        }
+  
+        dataStruct.push(data);
+        block.setData(dataStruct);
+  
+        block.renderNewItem(data);
+        block.ready();
+  
+        console.log("list item added");
+      });
     },
   
     reindexData: function() {
@@ -1424,9 +1471,10 @@
         if (!_.isArray(dataStruct)) {
           dataStruct = [];
         }
+  
         dataStruct.push(data);
         this.setData(dataStruct);
-        this.renderGalleryThumb( data );
+        this.renderGalleryThumb(data);
         this.ready();
       }
     }
