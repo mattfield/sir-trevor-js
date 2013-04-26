@@ -1,5 +1,5 @@
 var dropzone_templ = "<p>Drop images here</p><div class=\"input submit\"><input type=\"file\" multiple=\"multiple\" /></div><button>...or choose file(s)</button>";
-var text_tmpl = '<div class="filth" contenteditable="true" />';
+var text_tmpl = '<div class="description" contenteditable="true" />';
 var new_item_tmpl ='<div class="add-item"><a href="#">Click to add a new item</a>';
 
 SirTrevor.Blocks.Custom = SirTrevor.Block.extend({ 
@@ -56,8 +56,7 @@ SirTrevor.Blocks.Custom = SirTrevor.Block.extend({
     var list = $('<li>', {
       id: _.uniqueId('gallery-item'),
       class: 'gallery-item',
-      html: img,
-      draggable: 'true'
+      html: img
     }).append(text);
 
     list.append($("<span>", {
@@ -143,12 +142,12 @@ SirTrevor.Blocks.Custom = SirTrevor.Block.extend({
     // Add the new item button
     this.$el.prepend(new_item_tmpl);
 
-    // Sortable hijacks the click event
     this.$$('ul').sortable({
       out: function(ev, ui){
         $(this).sortable("refresh");
         block.reindexData();
       }
+      // `sortable` hijacks the click event
     }).on('click', '[contenteditable]', function(){
       $(this).focus();
       block.reindexData();
