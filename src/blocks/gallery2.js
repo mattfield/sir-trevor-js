@@ -2,11 +2,11 @@ var dropzone_templ = "<p>Drop images here</p><div class=\"input submit\"><input 
 var text_tmpl = '<div class="filth" contenteditable="true" />';
 var new_item_tmpl ='<div class="add-item"><a href="#">Click to add a new item</a>';
 
-SirTrevor.Blocks.Gallery2 = SirTrevor.Block.extend({ 
-  title: "Gallery2",
-  className: "gallery2",
+SirTrevor.Blocks.Custom = SirTrevor.Block.extend({ 
+  title: "Custom",
+  className: "custom-list",
   dropEnabled: true,
-  editorHTML: "<div class=\"gallery-items\"><p>Gallery Contents:</p><ul></ul></div>",
+  editorHTML: "<div class=\"gallery-items\"><p>List Contents:</p><ul></ul></div>",
   dropzoneHTML: dropzone_templ,
 
   loadData: function(data){
@@ -21,29 +21,27 @@ SirTrevor.Blocks.Gallery2 = SirTrevor.Block.extend({
       // Show the dropzone too
       this.$dropzone.show();
     }
+
   },
 
   renderNewItem: function(item){
+    var description = $(text_tmpl).text(item.data.text);
+
     var listEl = $('<li>', {
       id: _.uniqueId('gallery-item'),
-      class: 'gallery-item'
+      class: 'gallery-item',
+      html: description
     });
 
-    var description = $(text_tmpl).text(item.data.text);
     description.on('blur', function() { 
       item.data.text = description.text();
     });
 
-    //description.data('block', item);
-    console.log(description);
-
-    this.$$('ul').append(description);
-
-    console.log('new item rendered:', item, description);
+    listEl.data('block', item);
+    this.$$('ul').append(listEl);
   },
 
   renderGalleryThumb: function(item) {
-    console.log(item);   
     if(_.isUndefined(item.data.file)) return false;
 
     var img = $("<img>", {
@@ -55,13 +53,12 @@ SirTrevor.Blocks.Gallery2 = SirTrevor.Block.extend({
       item.data.text = text.text();
     });
 
-    console.log(text);
-
     var list = $('<li>', {
       id: _.uniqueId('gallery-item'),
       class: 'gallery-item',
-      html: img
-    }).add(text);
+      html: img,
+      draggable: 'true'
+    }).append(text);
 
     list.append($("<span>", {
       class: 'delete',
@@ -79,6 +76,58 @@ SirTrevor.Blocks.Gallery2 = SirTrevor.Block.extend({
     list.data('block', item);
 
     this.$$('ul').append(list);
+
+    // Make it sortable
+    //list
+    //.dropArea()
+    //.bind('dragstart', _.bind(function(ev){
+      //var item = $(ev.target);
+      //console.log(item, ev);
+      //ev.originalEvent.dataTransfer.setData('Text', item.parent().attr('id'));
+      //item.parent().addClass('dragging');
+    //}, this))
+
+    //.bind('drag', _.bind(function(ev){
+
+    //}, this))
+
+    //.bind('dragend', _.bind(function(ev){
+      //var item = $(ev.target);
+      //item.parent().removeClass('dragging');
+    //}, this))
+
+    //.bind('dragover', _.bind(function(ev){
+      //var item = $(ev.target);
+      //item.parents('li').addClass('dragover');
+    //}, this))
+
+    //.bind('dragleave', _.bind(function(ev){
+      //var item = $(ev.target);
+      //item.parents('li').removeClass('dragover');
+    //}, this))
+
+    //.bind('drop', _.bind(function(ev){
+
+      //var item = $(ev.target),
+          //parent = item.parent();
+
+      //item = (item.hasClass('gallery-item') ? item : parent);    
+
+      //this.$$('ul li.dragover').removeClass('dragover');
+
+      //// Get the item
+      //var target = $('#' + ev.originalEvent.dataTransfer.getData("text/plain"));
+
+      //if(target.attr('id') === item.attr('id')) return false;
+
+      //if (target.length > 0 && target.hasClass('gallery-item')) {
+        //item.before(target);
+      //}
+
+      //// Reindex the data
+      //this.reindexData();
+
+    //}, this));
   },
 
   onBlockRender: function(){
@@ -93,6 +142,17 @@ SirTrevor.Blocks.Gallery2 = SirTrevor.Block.extend({
 
     // Add the new item button
     this.$el.prepend(new_item_tmpl);
+
+    // Sortable hijacks the click event
+    this.$$('ul').sortable({
+      out: function(ev, ui){
+        $(this).sortable("refresh");
+        block.reindexData();
+      }
+    }).on('click', '[contenteditable]', function(){
+      $(this).focus();
+      block.reindexData();
+    });
 
     $('.add-item').on('click', function(e){
       e.preventDefault();
@@ -113,7 +173,6 @@ SirTrevor.Blocks.Gallery2 = SirTrevor.Block.extend({
       block.renderNewItem(data);
       block.ready();
 
-      console.log("list item added");
     });
   },
 

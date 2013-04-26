@@ -320,6 +320,14 @@ body { margin: 0; font-size: 1em; line-height: 1.4; }
     background: url(../img/sir-trevor/icons/new_image.png) no-repeat 15px 8px;
   }
 
+  .gallery-item {
+    border: 1px solid black;
+  }
+
+  .filth {
+    border: 1px solid blue;
+  }
+
   /* Video */
 
   .video-block.dropzone p {
