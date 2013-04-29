@@ -37,7 +37,7 @@ SirTrevor.Blocks.Custom = SirTrevor.Block.extend({
     this.$$('ul').append(listEl);
 
     var title = listEl.find('input[name="title"]').val(item.data.title);
-    var description = listEl.find('.description').text(item.data.text);
+    var description;
 
     title.on('blur', function() { 
       item.data.title = title.val();
@@ -59,6 +59,7 @@ SirTrevor.Blocks.Custom = SirTrevor.Block.extend({
       e.preventDefault();
       var tmpl = description_tmpl;
       title.after(description_tmpl);
+      description = listEl.find('.description').text(item.data.text);
     });
 
     listEl.data('block', item);
