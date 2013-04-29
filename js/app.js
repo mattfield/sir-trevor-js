@@ -7,6 +7,7 @@
 
   $('form').on('submit', function(e){
     $('.output').html(editor.$el.val());
+    console.log(editor.$el.val());
     return false;
   });
 

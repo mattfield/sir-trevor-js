@@ -1275,22 +1275,23 @@
     
   });
   var dropzone_templ = "<p>Drop images here</p><div class=\"input submit\"><input type=\"file\" multiple=\"multiple\" /></div><button>...or choose file(s)</button>";
-  var text_tmpl = '<div class="description" contenteditable="true" />';
-  var new_item_tmpl ='<div class="add-item"><a href="#">Click to add a new item</a>';
+  var title_tmpl = '<label>Title</label><input maxlength="100" name="title" class="text-block input-string required" type="text"/><a href="#" class="add-description">Add Description</a><a href="#" class="add-media">Add Media</a>';
+  var description_tmpl = '<label>Description</label><div class="description" contenteditable="true" />';
+  var new_item_tmpl ='<div class="add-item"><a href="#">Click to add a new item</a></div>';
   
   SirTrevor.Blocks.Custom = SirTrevor.Block.extend({ 
     title: "Custom",
     className: "custom-list",
     dropEnabled: true,
     editorHTML: "<div class=\"gallery-items\"><p>List Contents:</p><ul></ul></div>",
-    dropzoneHTML: dropzone_templ,
+    dropzoneHTML: null,
   
     loadData: function(data){
   
       // Find all our gallery blocks and draw nice list items from it
       if (_.isArray(data)) {
         _.each(data, _.bind(function(item){
-          // Create an image block from this
+          this.renderNewItem(item);
           this.renderGalleryThumb(item);
         }, this));
   
@@ -1301,20 +1302,43 @@
     },
   
     renderNewItem: function(item){
-      var description = $(text_tmpl).text(item.data.text);
+      var block = this;
   
       var listEl = $('<li>', {
         id: _.uniqueId('gallery-item'),
         class: 'gallery-item',
-        html: description
+        html: title_tmpl
       });
   
-      description.on('blur', function() { 
+      this.$$('ul').append(listEl);
+  
+      var title = listEl.find('input[name="title"]').val(item.data.title);
+      var description = listEl.find('.description').text(item.data.text);
+  
+      title.on('blur', function() { 
+        item.data.title = title.val();
+  
+        listEl.data('block', item);
+        block.reindexData();
+      });
+  
+      this.descriptionBlur = function(){
+        console.log(description.text());
         item.data.text = description.text();
+        console.log(item.data.text, description.text())
+  
+        listEl.data('block', item);
+        block.reindexData();
+      };
+  
+      this.$$('.add-description').on('click', function(e){
+        e.preventDefault();
+        var tmpl = description_tmpl;
+        title.after(description_tmpl);
       });
   
       listEl.data('block', item);
-      this.$$('ul').append(listEl);
+      this.reindexData();
     },
   
     renderGalleryThumb: function(item) {
@@ -1324,16 +1348,11 @@
         src: item.data.file.thumb.url
       });
   
-      var text = $(text_tmpl).text(item.data.text);
-      text.on('blur', function() { 
-        item.data.text = text.text();
-      });
-  
       var list = $('<li>', {
         id: _.uniqueId('gallery-item'),
         class: 'gallery-item',
         html: img
-      }).append(text);
+      });
   
       list.append($("<span>", {
         class: 'delete',
@@ -1351,64 +1370,11 @@
       list.data('block', item);
   
       this.$$('ul').append(list);
-  
-      // Make it sortable
-      //list
-      //.dropArea()
-      //.bind('dragstart', _.bind(function(ev){
-        //var item = $(ev.target);
-        //console.log(item, ev);
-        //ev.originalEvent.dataTransfer.setData('Text', item.parent().attr('id'));
-        //item.parent().addClass('dragging');
-      //}, this))
-  
-      //.bind('drag', _.bind(function(ev){
-  
-      //}, this))
-  
-      //.bind('dragend', _.bind(function(ev){
-        //var item = $(ev.target);
-        //item.parent().removeClass('dragging');
-      //}, this))
-  
-      //.bind('dragover', _.bind(function(ev){
-        //var item = $(ev.target);
-        //item.parents('li').addClass('dragover');
-      //}, this))
-  
-      //.bind('dragleave', _.bind(function(ev){
-        //var item = $(ev.target);
-        //item.parents('li').removeClass('dragover');
-      //}, this))
-  
-      //.bind('drop', _.bind(function(ev){
-  
-        //var item = $(ev.target),
-            //parent = item.parent();
-  
-        //item = (item.hasClass('gallery-item') ? item : parent);    
-  
-        //this.$$('ul li.dragover').removeClass('dragover');
-  
-        //// Get the item
-        //var target = $('#' + ev.originalEvent.dataTransfer.getData("text/plain"));
-  
-        //if(target.attr('id') === item.attr('id')) return false;
-  
-        //if (target.length > 0 && target.hasClass('gallery-item')) {
-          //item.before(target);
-        //}
-  
-        //// Reindex the data
-        //this.reindexData();
-  
-      //}, this));
     },
   
     onBlockRender: function(){
       var block = this;
   
-      // We need to setup this block for reordering
       /* Setup the upload button */
       // this.$dropzone.find('button').bind('click', halt);
       this.$dropzone.find('input').on('change', _.bind(function(ev){
@@ -1424,9 +1390,12 @@
           block.reindexData();
         }
         // `sortable` hijacks the click event
-      }).on('click', '[contenteditable]', function(){
+      }).on('click', '.description', function(){
         $(this).focus();
         block.reindexData();
+        // ...and the blur event
+      }).on('blur', '.description', function(){
+        block.descriptionBlur();
       });
   
       $('.add-item').on('click', function(e){
@@ -1435,7 +1404,7 @@
         block.$editor.show();
   
         var dataStruct = block.getData();
-        var data = { type: 'list-element', data: { text: "" } };
+        var data = { type: 'list-element', data: { title: "", text: "" } };
   
         // Add to our struct
         if (!_.isArray(dataStruct)) {
@@ -1447,7 +1416,6 @@
   
         block.renderNewItem(data);
         block.ready();
-  
       });
     },
   
@@ -1472,7 +1440,7 @@
         this.loading();
         this.$editor.show();
         var dataStruct = this.getData();
-        var data = { type: 'list-element', data: { text: "",  file: { thumb: { url: "https://secure.gravatar.com/avatar/99ad1f17dcf24f066980486d0a494a4f?s=100"} } } };
+        var data = { type: 'list-element', data: { file: { thumb: { url: "https://secure.gravatar.com/avatar/99ad1f17dcf24f066980486d0a494a4f?s=100"} } } };
   
         // Add to our struct
         if (!_.isArray(dataStruct)) {
