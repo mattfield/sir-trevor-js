@@ -1186,7 +1186,10 @@
         e.preventDefault();
   
         if (listEl.find('.dropzone').length > 0) {
-          alert("You're already in the process of adding an image! Greedy.");
+          alert("You're already in the process of adding an image! Cheeky.");
+          return;
+        } else if (listEl.find('img').length > 0) {
+          alert("Only one image per list item, please! Move along!.");
           return;
         }
   
