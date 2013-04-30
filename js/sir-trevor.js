@@ -1310,6 +1310,20 @@
         html: title_tmpl
       });
   
+      listEl.append($("<span>", {
+        class: 'delete',
+        html: 'x',
+        click: _.bind(function(e){
+          // Remove this item
+          halt(e);
+  
+          if (confirm('Are you sure you wish to delete this item?')) {
+            $(e.target).parent().remove();
+            this.reindexData();
+          }
+        }, this)
+      }));
+  
       this.$$('ul').append(listEl);
   
       var title = listEl.find('input[name="title"]').val(item.data.title);
@@ -1323,17 +1337,21 @@
       });
   
       this.descriptionBlur = function(){
-        console.log(description.text());
         item.data.text = description.text();
-        console.log(item.data.text, description.text())
   
         listEl.data('block', item);
         block.reindexData();
       };
   
-      this.$$('.add-description').on('click', function(e){
+      listEl.find('.add-description').on('click', function(e){
         e.preventDefault();
         var tmpl = description_tmpl;
+  
+        if (listEl.find('.description').length > 0) {
+          alert('You have already added a description to this item');
+          return;
+        }
+  
         title.after(description_tmpl);
         description = listEl.find('.description').text(item.data.text);
       });
