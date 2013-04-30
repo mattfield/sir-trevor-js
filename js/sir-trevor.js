@@ -1274,10 +1274,10 @@
     }
     
   });
-  var dropzone_templ = "<p>Drop images here</p><div class=\"input submit\"><input type=\"file\" multiple=\"multiple\" /></div><button>...or choose file(s)</button>";
-  var title_tmpl = '<label>Title</label><input maxlength="100" name="title" class="text-block input-string required" type="text"/><a href="#" class="add-description">Add Description</a><a href="#" class="add-media">Add Media</a>';
+  var dropzone_tmpl = "<div class='dropzone custom-list-block'><p>Drop images here</p><div class=\"input submit\"><input type=\"file\" multiple=\"multiple\" /></div><button>...or choose file(s)</button></div>";
+  var title_tmpl = '<label>Title</label><input maxlength="100" name="title" class="text-block input-string required" type="text"/><div class="buttons"><button href="#" class="add-description">Add Description</button><button href="#" class="add-image">Add Image</button></div>';
   var description_tmpl = '<label>Description</label><div class="description" contenteditable="true" />';
-  var new_item_tmpl ='<div class="add-item"><a href="#">Click to add a new item</a></div>';
+  var new_item_tmpl ='<div class="add-item"><button href="#">Click to add a new item</button></div>';
   
   SirTrevor.Blocks.Custom = SirTrevor.Block.extend({ 
     title: "Custom",
@@ -1296,7 +1296,7 @@
         }, this));
   
         // Show the dropzone too
-        this.$dropzone.show();
+        //this.$dropzone.show();
       }
   
     },
@@ -1348,7 +1348,7 @@
         var tmpl = description_tmpl;
   
         if (listEl.find('.description').length > 0) {
-          alert('You have already added a description to this item');
+          alert('You have already added a description to this item.');
           return;
         }
   
@@ -1356,49 +1356,61 @@
         description = listEl.find('.description').text(item.data.text);
       });
   
+      listEl.find('.add-image').on('click', function(e){
+        e.preventDefault();
+  
+        if (listEl.find('.dropzone').length > 0) {
+          alert("You're already in the process of adding an image! Greedy.");
+          return;
+        }
+  
+        listEl.append(dropzone_tmpl);
+  
+        listEl.find('.dropzone').find('button').bind('click', halt);
+  
+        listEl.find('.dropzone input').on('change', _.bind(function(ev){
+          block.onDrop(ev.currentTarget, listEl);
+        }, this));
+      });
+  
       listEl.data('block', item);
       this.reindexData();
     },
   
-    renderGalleryThumb: function(item) {
-      if(_.isUndefined(item.data.file)) return false;
+    renderGalleryThumb: function(item, targetElement) {
+      if(_.isUndefined(item.data.image)) return false;
   
       var img = $("<img>", {
-        src: item.data.file.thumb.url
+        src: item.data.image
       });
   
-      var list = $('<li>', {
-        id: _.uniqueId('gallery-item'),
-        class: 'gallery-item',
-        html: img
-      });
+      var imgWrapper = $("<div>", {
+        html: '<label>Image</label>'
+      }).add(img);
   
-      list.append($("<span>", {
-        class: 'delete',
-        click: _.bind(function(e){
-          // Remove this item
-          halt(e);
+      //targetElement.append($("<span>", {
+        //class: 'delete',
+        //click: _.bind(function(e){
+          //// Remove this item
+          //halt(e);
   
-          if (confirm('Are you sure you wish to delete this item?')) {
-            $(e.target).parent().remove();
-            this.reindexData();
-          }
-        }, this)
-      }));
+          //if (confirm('Are you sure you wish to delete this item?')) {
+            //$(e.target).parent().remove();
+            //this.reindexData();
+          //}
+        //}, this)
+      //}));
   
-      list.data('block', item);
+      targetElement.data('block', item);
   
-      this.$$('ul').append(list);
+      targetElement.append(imgWrapper);
+      this.reindexData();
     },
   
     onBlockRender: function(){
       var block = this;
   
       /* Setup the upload button */
-      // this.$dropzone.find('button').bind('click', halt);
-      this.$dropzone.find('input').on('change', _.bind(function(ev){
-        this.onDrop(ev.currentTarget);
-      }, this));
   
       // Add the new item button
       this.$el.prepend(new_item_tmpl);
@@ -1411,7 +1423,6 @@
         // `sortable` hijacks the click event
       }).on('click', '.description', function(){
         $(this).focus();
-        block.reindexData();
         // ...and the blur event
       }).on('blur', '.description', function(){
         block.descriptionBlur();
@@ -1423,7 +1434,7 @@
         block.$editor.show();
   
         var dataStruct = block.getData();
-        var data = { type: 'list-element', data: { title: "", text: "" } };
+        var data = { type: 'list-element', data: { title: "", text: "", image: "" } };
   
         // Add to our struct
         if (!_.isArray(dataStruct)) {
@@ -1434,7 +1445,6 @@
         block.setData(dataStruct);
   
         block.renderNewItem(data);
-        block.ready();
       });
     },
   
@@ -1450,25 +1460,23 @@
       this.setData(dataStruct);
     },
   
-    onDrop: function(transferData){
+    onDrop: function(transferData, targetElement, existingData){
       if (transferData.files.length > 0) {
         // Multi files 'ere
         var l = transferData.files.length,
         file, urlAPI = (typeof URL !== "undefined") ? URL : (typeof webkitURL !== "undefined") ? webkitURL : null;
   
+        var origData = targetElement.data('block');
+  
         this.loading();
         this.$editor.show();
         var dataStruct = this.getData();
-        var data = { type: 'list-element', data: { file: { thumb: { url: "https://secure.gravatar.com/avatar/99ad1f17dcf24f066980486d0a494a4f?s=100"} } } };
+        var data = { type: 'list-element', data: { title: origData.data.title, text: origData.data.text, image: "https://secure.gravatar.com/avatar/99ad1f17dcf24f066980486d0a494a4f?s=100" } };
   
-        // Add to our struct
-        if (!_.isArray(dataStruct)) {
-          dataStruct = [];
-        }
-  
+        $('.dropzone').remove();
         dataStruct.push(data);
         this.setData(dataStruct);
-        this.renderGalleryThumb(data);
+        this.renderGalleryThumb(data, targetElement);
         this.ready();
       }
     }
