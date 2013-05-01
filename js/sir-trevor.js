@@ -1156,16 +1156,22 @@
       var description;
   
       title.on('blur', function() { 
-        item.data.title = title.val();
+        //item.data.title = title.val();
   
-        listEl.data('block', item);
+        var blockData = listEl.data('block');
+        blockData.data.title = title.val();
+  
+        listEl.data('block', blockData);
         block.reindexData();
       });
   
       this.descriptionBlur = function(){
-        item.data.text = description.text();
+        //item.data.text = description.text();
   
-        listEl.data('block', item);
+        var blockData = listEl.data('block');
+        blockData.data.text = description.text();
+  
+        listEl.data('block', blockData);
         block.reindexData();
       };
   
@@ -1207,15 +1213,16 @@
     },
   
     renderGalleryThumb: function(item, targetElement) {
-      if(_.isUndefined(item.data.image)) return false;
+      if(_.isUndefined(item.data.image.url)) return false;
   
       var img = $("<img>", {
-        src: item.data.image
+        src: item.data.image.url
       });
   
       var imgWrapper = $("<div>", {
+        class: 'imgWrapper',
         html: '<label>Image</label>'
-      }).add(img);
+      }).append(img);
   
       //targetElement.append($("<span>", {
         //class: 'delete',
@@ -1263,7 +1270,7 @@
         block.$editor.show();
   
         var dataStruct = block.getData();
-        var data = { type: 'list-element', data: { title: "", text: "", image: "" } };
+        var data = { type: 'list-element', data: { title: "", text: "", image: { url: "", source: "" } } };
   
         // Add to our struct
         if (!_.isArray(dataStruct)) {
@@ -1300,11 +1307,12 @@
         this.loading();
         this.$editor.show();
         var dataStruct = this.getData();
-        var data = { type: 'list-element', data: { title: origData.data.title, text: origData.data.text, image: "https://secure.gravatar.com/avatar/99ad1f17dcf24f066980486d0a494a4f?s=100" } };
+        data = { type: 'list-element', data: { title: origData.data.title, text: origData.data.text, image: { url: "https://secure.gravatar.com/avatar/99ad1f17dcf24f066980486d0a494a4f?s=100", source: "" } } };
   
         $('.dropzone').remove();
-        dataStruct.push(data);
+        dataStruct = data;
         this.setData(dataStruct);
+        console.log(this.getData());
         this.renderGalleryThumb(data, targetElement);
         this.ready();
       }
