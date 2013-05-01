@@ -1104,6 +1104,7 @@
   var title_tmpl = '<label>Title</label><input maxlength="100" name="title" class="text-block input-string required" type="text"/><div class="buttons"><button href="#" class="add-description">Add Description</button><button href="#" class="add-image">Add Image</button></div>';
   var description_tmpl = '<label>Description</label><div class="description" contenteditable="true" />';
   var new_item_tmpl ='<div class="add-item"><button href="#">Click to add a new item</button></div>';
+  var src_tmpl = '<label>Source</label><input type="text" name="source" class="text-block input-string">';
   
   SirTrevor.Blocks.Custom = SirTrevor.Block.extend({ 
     title: "Custom",
@@ -1154,6 +1155,7 @@
   
       var title = listEl.find('input[name="title"]').val(item.data.title);
       var description;
+      var source;
   
       title.on('blur', function() { 
         //item.data.title = title.val();
@@ -1297,6 +1299,8 @@
     },
   
     onDrop: function(transferData, targetElement, existingData){
+      var block = this;
+  
       if (transferData.files.length > 0) {
         // Multi files 'ere
         var l = transferData.files.length,
@@ -1312,9 +1316,19 @@
         $('.dropzone').remove();
         dataStruct = data;
         this.setData(dataStruct);
-        console.log(this.getData());
         this.renderGalleryThumb(data, targetElement);
         this.ready();
+  
+        targetElement.find('.imgWrapper').append(src_tmpl);
+        source = targetElement.find('input[name="source"]');
+  
+        source.on('blur', function(e){
+          var blockData = targetElement.data('block');
+          blockData.data.image.source = source.val();
+  
+          targetElement.data('block', blockData);
+          block.reindexData();
+        });
       }
     }
   
