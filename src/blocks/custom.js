@@ -10,16 +10,13 @@ SirTrevor.Blocks.Custom = SirTrevor.Block.extend({
   editorHTML: "<div class=\"gallery-items\"><p>List Contents:</p><ul></ul></div>",
 
   loadData: function(data){
-
     // Find all our gallery blocks and draw nice list items from it
     if (_.isArray(data)) {
       _.each(data, _.bind(function(item){
         this.renderNewItem(item);
         this.renderGalleryThumb(item);
       }, this));
-
     }
-
   },
 
   renderNewItem: function(item){
@@ -155,6 +152,7 @@ SirTrevor.Blocks.Custom = SirTrevor.Block.extend({
       // `sortable` hijacks the click event
     }).on('click', '.description', function(){
       $(this).focus();
+      document.execCommand("insertBrOnReturn", false, true);
       // ...and the blur event
     }).on('blur', '.description', function(){
       block.descriptionBlur();
