@@ -10,4 +10,39 @@ SirTrevor.Blocks.Custom = SirTrevor.Block.extend
   title: 'Custom'
   className: 'custom-list'
   editorHTML: templates.editor
-  loadData: -> (data)
+  loadData: (data) ->
+
+    if _.isArray(data)
+      _.each data, _.bind((item) ->
+        @renderNewItem item
+        @renderGalleryItem item
+      , this)
+
+  renderNewItem: (item) ->
+
+    listEl = $('<li>',
+      id: _.uniqueId 'gallery-item'
+      class: 'gallery-item'
+      html: templates.title
+    )
+
+    listEl.append $('<span>',
+      class: 'delete'
+      html: 'x'
+      click: (e) ->
+        halt e
+        if confirm('Are you sure you want to delete this item?')
+          $(e.target).parent().remove()
+          @reindexData()
+      )
+
+    this.$$('ul').append listEl
+
+    title = listEl.find('input[name="title"]').val(item.data.title)
+
+    title.on 'blur', =>
+      blockData = listEl.data 'block'
+      blockData.data.title = $(this).val()
+      
+      listEl.data('block', blockData)
+      @reindexData()
