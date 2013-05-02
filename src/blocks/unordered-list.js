@@ -32,6 +32,7 @@ SirTrevor.Blocks.Ul = SirTrevor.Block.extend({
   },
   
   toMarkdown: function(markdown) {
+    console.log(markdown);
     return markdown.replace(/<\/li>/mg,"\n")
                    .replace(/<\/?[^>]+(>|$)/g, "")
                    .replace(/^(.+)$/mg," - $1"); 

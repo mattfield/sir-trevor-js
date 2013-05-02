@@ -7,9 +7,7 @@ var src_tmpl = '<label>Source</label><input type="text" name="source" class="tex
 SirTrevor.Blocks.Custom = SirTrevor.Block.extend({ 
   title: "Custom",
   className: "custom-list",
-  dropEnabled: true,
   editorHTML: "<div class=\"gallery-items\"><p>List Contents:</p><ul></ul></div>",
-  dropzoneHTML: null,
 
   loadData: function(data){
 
@@ -20,8 +18,6 @@ SirTrevor.Blocks.Custom = SirTrevor.Block.extend({
         this.renderGalleryThumb(item);
       }, this));
 
-      // Show the dropzone too
-      //this.$dropzone.show();
     }
 
   },
@@ -69,7 +65,7 @@ SirTrevor.Blocks.Custom = SirTrevor.Block.extend({
       //item.data.text = description.text();
 
       var blockData = listEl.data('block');
-      blockData.data.text = description.text();
+      blockData.data.text = description.html().toString();
 
       listEl.data('block', blockData);
       block.reindexData();
@@ -228,6 +224,9 @@ SirTrevor.Blocks.Custom = SirTrevor.Block.extend({
         block.reindexData();
       });
     }
+  },
+  toMarkdown: function(markdown){
+    console.log(markdown);
   }
 
 });

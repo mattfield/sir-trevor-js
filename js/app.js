@@ -2,12 +2,11 @@
 
   var editor = new SirTrevor.Editor({
     el: $('.sir-trevor'),
-    blockTypes: ['Custom']
+    blockTypes: ['Ul', 'Custom']
   });
 
   $('form').on('submit', function(e){
-    $('.output').html(editor.$el.val());
-    console.log(editor.$el.val());
+    $('.output').html((editor.$el.val()).toString());
     return false;
   });
 

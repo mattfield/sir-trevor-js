@@ -1109,9 +1109,7 @@
   SirTrevor.Blocks.Custom = SirTrevor.Block.extend({ 
     title: "Custom",
     className: "custom-list",
-    dropEnabled: true,
     editorHTML: "<div class=\"gallery-items\"><p>List Contents:</p><ul></ul></div>",
-    dropzoneHTML: null,
   
     loadData: function(data){
   
@@ -1122,8 +1120,6 @@
           this.renderGalleryThumb(item);
         }, this));
   
-        // Show the dropzone too
-        //this.$dropzone.show();
       }
   
     },
@@ -1171,7 +1167,7 @@
         //item.data.text = description.text();
   
         var blockData = listEl.data('block');
-        blockData.data.text = description.text();
+        blockData.data.text = description.html().toString();
   
         listEl.data('block', blockData);
         block.reindexData();
@@ -1330,6 +1326,9 @@
           block.reindexData();
         });
       }
+    },
+    toMarkdown: function(markdown){
+      console.log(markdown);
     }
   
   });
@@ -1734,6 +1733,7 @@
     },
     
     toMarkdown: function(markdown) {
+      console.log(markdown);
       return markdown.replace(/<\/li>/mg,"\n")
                      .replace(/<\/?[^>]+(>|$)/g, "")
                      .replace(/^(.+)$/mg," - $1"); 
