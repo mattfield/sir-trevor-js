@@ -29,7 +29,7 @@ SirTrevor.Blocks.Custom = SirTrevor.Block.extend
     listEl.append $('<span>',
       class: 'delete'
       html: 'x'
-      click: (e) ->
+      click: (e) =>
         halt e
         if confirm('Are you sure you want to delete this item?')
           $(e.target).parent().remove()
@@ -46,3 +46,128 @@ SirTrevor.Blocks.Custom = SirTrevor.Block.extend
       
       listEl.data('block', blockData)
       @reindexData()
+
+    @descriptionBlur = =>
+      blockData.data.text = description.html().toString()
+
+      listEl.data('block', blockData)
+      @reindexData
+
+    listEl.find('.add-description').on 'click', (e) ->
+      e.preventDefault()
+      tmpl = templates.description
+
+      return if listEl.find('.dropzone')? or listEl.find('img')?
+
+      listEl.append templates.dropzone
+
+      listEl.find('.dropzone').find('button').bind 'click', halt
+
+      listEl.find('.dropzone input').on 'change', (e) =>
+        @onDrop ev.currentTarget, listEl
+
+    listEl.data 'block', item
+    @reindexData()
+
+  renderGalleryThumb: (item, targetElement) ->
+    return false if !item.data.image.url
+
+    img = $('<img>',
+      src: item.data.image.url
+    )
+
+    imgWrapper = $('<div>',
+      class: 'imgWrapper'
+      html: '<label>Image</label>'
+    ).append img
+
+    targetElement.data 'block', item
+    targetElement.append imgWrapper
+    @reindexData()
+
+  onBlockRender: ->
+    this.$el.prepend templates.newItem
+
+    this.$$('ul').sortable
+      out: (ev, ui) =>
+        $(this).sortable 'refresh'
+        @reindexData()
+    .on 'click', '.description', ->
+      $(this).focus()
+      document.execCommand 'insertBrOnReturn', false, true
+    .on 'blur', '.description', =>
+      @descriptionBlur()
+
+    $('.add-item').on 'click', (e) =>
+      e.preventDefault()
+
+      this.$editor.show()
+
+      struct = @getData()
+      data =
+        type: 'list-element'
+        data:
+          title: ''
+          text: ''
+          image:
+            url: ''
+            source: ''
+
+      struct = [] if !_.isArray struct
+
+      struct.push data
+      @setData struct
+
+      @renderNewItem data
+   
+  reindexData: =>
+    struct = @getData()
+    struct = []
+
+    _.each this.$$('li.gallery-item'), (li) ->
+      li = $(li)
+      struct.push li.data 'block'
+
+    @setData struct
+
+  onDrop: (transferData, targetElement, existingData) =>
+    if transfer.files.length > 0
+      l = transfer.files.length
+      file = null
+      urlAPI = (if (typeof URL isnt 'undefined') then URL else (if (typeof webkitURL isnt 'undefined') then webkitURL else null))
+
+      origData = targetElement.data 'block'
+
+      @loading()
+      this.$editor.show()
+
+      struct = @getData()
+      data =
+        type: 'list-element'
+        data:
+          title: origData.data.title
+          text: origData.data.text
+          image:
+            url: 'https://secure.gravatar.com/avatar/99ad1f17dcf24f066980486d0a494a4f?s=100'
+            source: ''
+
+      $('.dropzone').remove()
+
+      struct = data
+      @setData struct
+      @renderGalleryThumb data, targetElement
+      @ready()
+
+      targetElement.find('.imgWrapper').append templates.src
+      source = targetElement.find 'input[name="source"]'
+
+      source.on 'blur', (e) =>
+        blockData = targetElement.data 'block'
+        blockData.data.image.source = source.val()
+
+        targetElement.data 'block', blockData
+        @reindexData()
+
+  toMarkdown: (markdown) ->
+    console.log markdown
+
