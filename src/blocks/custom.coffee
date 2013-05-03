@@ -13,20 +13,18 @@ SirTrevor.Blocks.Custom = SirTrevor.Block.extend
   loadData: (data) ->
 
     if _.isArray(data)
-      _.each data, _.bind((item) ->
+      _.each data, (item) =>
         @renderNewItem item
         @renderGalleryItem item
-      , this)
 
   renderNewItem: (item) ->
 
-    listEl = $('<li>',
+    listEl = $ '<li>',
       id: _.uniqueId 'gallery-item'
       class: 'gallery-item'
       html: templates.title
-    )
 
-    listEl.append $('<span>',
+    listEl.append $ '<span>',
       class: 'delete'
       html: 'x'
       click: (e) =>
@@ -34,8 +32,7 @@ SirTrevor.Blocks.Custom = SirTrevor.Block.extend
         if confirm('Are you sure you want to delete this item?')
           $(e.target).parent().remove()
           @reindexData()
-      )
-
+      
     this.$$('ul').append listEl
 
     title = listEl.find('input[name="title"]').val(item.data.title)
@@ -81,14 +78,13 @@ SirTrevor.Blocks.Custom = SirTrevor.Block.extend
   renderGalleryThumb: (item, targetElement) ->
     return false if _.isUndefined item.data.image.url
 
-    img = $('<img>',
+    img = $ '<img>',
       src: item.data.image.url
-    )
 
-    imgWrapper = $('<div>',
+    imgWrapper = $ '<div>',
       class: 'imgWrapper'
       html: '<label>Image</label>'
-    ).append img
+    .append img
 
     targetElement.data 'block', item
     targetElement.append imgWrapper
