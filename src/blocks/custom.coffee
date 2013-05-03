@@ -48,16 +48,25 @@ SirTrevor.Blocks.Custom = SirTrevor.Block.extend
       @reindexData()
 
     @descriptionBlur = =>
+      blockData = listEl.data 'block'
       blockData.data.text = description.html().toString()
 
       listEl.data('block', blockData)
-      @reindexData
+      @reindexData()
 
     listEl.find('.add-description').on 'click', (e) ->
       e.preventDefault()
       tmpl = templates.description
 
-      return if listEl.find('.dropzone')? or listEl.find('img')?
+      return if listEl.find('.description')?
+
+      title.after templates.description
+      description = listEl.find('.description').text item.data.text
+
+    listEl.find('.add-image').on 'click', (e) ->
+      e.preventDefault()
+
+      return if listEl.find('.dropzone').length > 0 or listEl.find('img').length > 0
 
       listEl.append templates.dropzone
 
@@ -70,7 +79,7 @@ SirTrevor.Blocks.Custom = SirTrevor.Block.extend
     @reindexData()
 
   renderGalleryThumb: (item, targetElement) ->
-    return false if !item.data.image.url
+    return false if _.isUndefined item.data.image.url
 
     img = $('<img>',
       src: item.data.image.url
@@ -89,7 +98,7 @@ SirTrevor.Blocks.Custom = SirTrevor.Block.extend
     this.$el.prepend templates.newItem
 
     this.$$('ul').sortable
-      out: (ev, ui) =>
+      out: (ev, ui) ->
         $(this).sortable 'refresh'
         @reindexData()
     .on 'click', '.description', ->
@@ -119,6 +128,7 @@ SirTrevor.Blocks.Custom = SirTrevor.Block.extend
       @setData struct
 
       @renderNewItem data
+    return
    
   reindexData: =>
     struct = @getData()
