@@ -32,10 +32,10 @@
       }
     },
     renderNewItem: function(item) {
-      var block, listEl, title,
+      var description, listEl, title,
         _this = this;
 
-      block = this;
+      description = void 0;
       listEl = $('<li>', {
         id: _.uniqueId('gallery-item'),
         "class": 'gallery-item',
@@ -57,18 +57,20 @@
       title.on('blur', function() {
         var blockData;
 
+        item.data.title = title.val();
         blockData = listEl.data('block');
-        blockData.data.title = $(this).val();
+        blockData.data.title = title.val();
         listEl.data('block', blockData);
-        return _this.setData(blockData);
+        return this.reindexData;
       });
       this.descriptionBlur = function() {
         var blockData;
 
+        item.data.text = description.html();
         blockData = listEl.data('block');
         blockData.data.text = _this.instance._toMarkdown(description.html(), _this.type);
         listEl.data('block', blockData);
-        return _this.setData(blockData);
+        return _this.reindexData;
       };
       listEl.find('.add-description').on('click', function(e) {
         var tmpl;
@@ -80,7 +82,7 @@
           return;
         }
         title.after(templates.description);
-        window.description = listEl.find('.description').text(item.data.text);
+        description = listEl.find('.description').text(item.data.text);
       });
       listEl.find('.add-image').on('click', function(e) {
         e.preventDefault();

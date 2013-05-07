@@ -21,7 +21,7 @@ SirTrevor.Blocks.Custom = SirTrevor.Block.extend
         @renderGalleryItem item
 
   renderNewItem: (item) ->
-    block = this
+    description = undefined
 
     listEl = $ '<li>',
       id: _.uniqueId 'gallery-item'
@@ -42,18 +42,23 @@ SirTrevor.Blocks.Custom = SirTrevor.Block.extend
     title = listEl.find('input[name="title"]').val(item.data.title)
 
     title.on 'blur', ->
+      item.data.title = title.val()
+
       blockData = listEl.data 'block'
-      blockData.data.title = $(this).val()
+      blockData.data.title = title.val()
       
       listEl.data('block', blockData)
-      _this.setData blockData
+      @reindexData
 
     @descriptionBlur = =>
+      item.data.text = description.html()
+
       blockData = listEl.data 'block'
       blockData.data.text = @instance._toMarkdown description.html(), this.type
+      #blockData.data.text = description.html()
 
       listEl.data('block', blockData)
-      @setData blockData
+      @reindexData
 
     listEl.find('.add-description').on 'click', (e) ->
       e.preventDefault()
@@ -64,7 +69,7 @@ SirTrevor.Blocks.Custom = SirTrevor.Block.extend
         return
 
       title.after templates.description
-      window.description = listEl.find('.description').text item.data.text
+      description = listEl.find('.description').text item.data.text
       return
 
     listEl.find('.add-image').on 'click', (e) ->
