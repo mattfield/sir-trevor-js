@@ -50,14 +50,16 @@ SirTrevor.Blocks.Custom = SirTrevor.Block.extend
       listEl.data('block', blockData)
       @reindexData
 
-    @descriptionBlur = =>
-      item.data.text = description.html()
+    @descriptionBlur = (source) =>
+      listItem = $(source.srcElement).parent()
+      console.log listItem, listItem.data('block')
 
-      blockData = listEl.data 'block'
-      blockData.data.text = @instance._toMarkdown description.html(), this.type
-      #blockData.data.text = description.html()
+      item.data.text = $(source.srcElement).html()
 
-      listEl.data('block', blockData)
+      blockData = listItem.data 'block'
+      blockData.data.text = @instance._toMarkdown $(source.srcElement).html(), this.type
+
+      listItem.data 'block', blockData
       @reindexData
 
     listEl.find('.add-description').on 'click', (e) ->
@@ -112,8 +114,8 @@ SirTrevor.Blocks.Custom = SirTrevor.Block.extend
     .on 'click', '.description', ->
       $(this).focus()
       document.execCommand 'insertBrOnReturn', false, true
-    .on 'blur', '.description', =>
-      @descriptionBlur()
+    .on 'blur', '.description', (e) =>
+      @descriptionBlur(e)
 
     $('.add-item').on 'click', (e) =>
       e.preventDefault()

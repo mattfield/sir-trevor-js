@@ -63,13 +63,15 @@
         listEl.data('block', blockData);
         return this.reindexData;
       });
-      this.descriptionBlur = function() {
-        var blockData;
+      this.descriptionBlur = function(source) {
+        var blockData, listItem;
 
-        item.data.text = description.html();
-        blockData = listEl.data('block');
-        blockData.data.text = _this.instance._toMarkdown(description.html(), _this.type);
-        listEl.data('block', blockData);
+        listItem = $(source.srcElement).parent();
+        console.log(listItem, listItem.data('block'));
+        item.data.text = $(source.srcElement).html();
+        blockData = listItem.data('block');
+        blockData.data.text = _this.instance._toMarkdown($(source.srcElement).html(), _this.type);
+        listItem.data('block', blockData);
         return _this.reindexData;
       };
       listEl.find('.add-description').on('click', function(e) {
@@ -127,8 +129,8 @@
       }).on('click', '.description', function() {
         $(this).focus();
         return document.execCommand('insertBrOnReturn', false, true);
-      }).on('blur', '.description', function() {
-        return _this.descriptionBlur();
+      }).on('blur', '.description', function(e) {
+        return _this.descriptionBlur(e);
       });
       $('.add-item').on('click', function(e) {
         var data, struct;
