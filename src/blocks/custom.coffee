@@ -10,14 +10,18 @@ SirTrevor.Blocks.Custom = SirTrevor.Block.extend
   title: 'Custom'
   className: 'custom-list'
   editorHTML: templates.editor
-  loadData: (data) ->
+  toolbarEnabled: true
+  toData: (data) ->
+    struct = this.$el.data('block')
 
+  loadData: (data) ->
     if _.isArray(data)
       _.each data, (item) =>
         @renderNewItem item
         @renderGalleryItem item
 
   renderNewItem: (item) ->
+    block = this
 
     listEl = $ '<li>',
       id: _.uniqueId 'gallery-item'
@@ -37,28 +41,31 @@ SirTrevor.Blocks.Custom = SirTrevor.Block.extend
 
     title = listEl.find('input[name="title"]').val(item.data.title)
 
-    title.on 'blur', =>
+    title.on 'blur', ->
       blockData = listEl.data 'block'
       blockData.data.title = $(this).val()
       
       listEl.data('block', blockData)
-      @reindexData()
+      _this.setData blockData
 
     @descriptionBlur = =>
       blockData = listEl.data 'block'
-      blockData.data.text = description.html().toString()
+      blockData.data.text = @instance._toMarkdown description.html(), this.type
 
       listEl.data('block', blockData)
-      @reindexData()
+      @setData blockData
 
     listEl.find('.add-description').on 'click', (e) ->
       e.preventDefault()
       tmpl = templates.description
 
-      return if listEl.find('.description')?
+      if listEl.find('.description').length > 0
+        alert 'You have already created a description for this item'
+        return
 
       title.after templates.description
-      description = listEl.find('.description').text item.data.text
+      window.description = listEl.find('.description').text item.data.text
+      return
 
     listEl.find('.add-image').on 'click', (e) ->
       e.preventDefault()
@@ -69,8 +76,8 @@ SirTrevor.Blocks.Custom = SirTrevor.Block.extend
 
       listEl.find('.dropzone').find('button').bind 'click', halt
 
-      listEl.find('.dropzone input').on 'change', (e) =>
-        @onDrop ev.currentTarget, listEl
+      listEl.find('.dropzone input').on 'change', (e) ->
+        _this.onDrop e.currentTarget, listEl
 
     listEl.data 'block', item
     @reindexData()
@@ -96,7 +103,7 @@ SirTrevor.Blocks.Custom = SirTrevor.Block.extend
     this.$$('ul').sortable
       out: (ev, ui) ->
         $(this).sortable 'refresh'
-        @reindexData()
+        _this.reindexData()
     .on 'click', '.description', ->
       $(this).focus()
       document.execCommand 'insertBrOnReturn', false, true
@@ -126,8 +133,8 @@ SirTrevor.Blocks.Custom = SirTrevor.Block.extend
       @renderNewItem data
     return
    
-  reindexData: =>
-    struct = @getData()
+  reindexData: ->
+    struct = this.getData()
     struct = []
 
     _.each this.$$('li.gallery-item'), (li) ->
@@ -136,10 +143,10 @@ SirTrevor.Blocks.Custom = SirTrevor.Block.extend
 
     @setData struct
 
-  onDrop: (transferData, targetElement, existingData) =>
-    if transfer.files.length > 0
-      l = transfer.files.length
-      file = null
+  onDrop: (transferData, targetElement, existingData) ->
+    if transferData.files.length > 0
+      l = transferData.files.length
+      file = undefined
       urlAPI = (if (typeof URL isnt 'undefined') then URL else (if (typeof webkitURL isnt 'undefined') then webkitURL else null))
 
       origData = targetElement.data 'block'
@@ -173,7 +180,3 @@ SirTrevor.Blocks.Custom = SirTrevor.Block.extend
 
         targetElement.data 'block', blockData
         @reindexData()
-
-  toMarkdown: (markdown) ->
-    console.log markdown
-
