@@ -11,8 +11,8 @@
     editor: '<div class=\"gallery-items\"><p>List Contents:</p><ul></ul></div>'
   };
 
-  SirTrevor.Blocks.CustomUl = SirTrevor.Block.extend({
-    title: 'CustomUl',
+  SirTrevor.Blocks.Listunordered = SirTrevor.Block.extend({
+    title: 'List Unordered',
     className: 'ul-custom-list',
     editorHTML: templates.editor,
     toolbarEnabled: true,

@@ -6,14 +6,11 @@ templates =
   src: '<label>Source</label><input type="text" name="source" class="text-block input-string">'
   editor: '<div class=\"gallery-items\"><p>List Contents:</p><ul></ul></div>'
 
-SirTrevor.Blocks.Custom = SirTrevor.Block.extend
-  title: 'Custom'
-  className: 'custom-list'
+SirTrevor.Blocks.Listunordered = SirTrevor.Block.extend
+  title: 'List Unordered'
+  className: 'ul-custom-list'
   editorHTML: templates.editor
   toolbarEnabled: true
-  toData: (data) ->
-    struct = this.$el.data('block')
-
   loadData: (data) ->
     if _.isArray(data)
       _.each data, (item) =>
@@ -41,6 +38,10 @@ SirTrevor.Blocks.Custom = SirTrevor.Block.extend
 
     title = listEl.find('input[name="title"]').val(item.data.title)
 
+    # General data save pattern:
+    #
+    # Fetch existing data then update associated data property after 
+    # passing through instance methods
     title.on 'blur', =>
       item.data.title = title.val()
 
@@ -53,8 +54,6 @@ SirTrevor.Blocks.Custom = SirTrevor.Block.extend
     @descriptionBlur = (source) =>
       listItem = $(source.srcElement).parent()
       console.log listItem
-
-      #item.data.text = $(source.srcElement).html()
 
       blockData = listItem.data 'block'
       blockData.data.text = @instance._toMarkdown $(source.srcElement).html(), this.type
@@ -71,6 +70,8 @@ SirTrevor.Blocks.Custom = SirTrevor.Block.extend
         return
 
       title.after templates.description
+
+      # Lazy binding
       description = listEl.find('.description').text item.data.text
       return
 
@@ -89,6 +90,7 @@ SirTrevor.Blocks.Custom = SirTrevor.Block.extend
     listEl.data 'block', item
     @reindexData()
 
+  # `targetElement` represents which list item the image should be attached to
   renderGalleryThumb: (item, targetElement) ->
     return false if _.isUndefined item.data.image.url
 
@@ -111,8 +113,10 @@ SirTrevor.Blocks.Custom = SirTrevor.Block.extend
       out: (ev, ui) ->
         $(this).sortable 'refresh'
         _this.reindexData()
+    # `sortable` hijacks the `click` event...
     .on 'click', '.description', ->
       $(this).focus()
+    # ...and the `blur` event too
     .on 'blur', '.description', (e) =>
       @descriptionBlur(e)
 
