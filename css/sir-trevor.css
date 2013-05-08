@@ -342,6 +342,10 @@ body { margin: 0; font-size: 1em; line-height: 1.4; }
     cursor: pointer;
   }
 
+  .custom-no-title-block ul {
+    list-style: none;
+  }
+
   /* Video */
 
   .video-block.dropzone p {

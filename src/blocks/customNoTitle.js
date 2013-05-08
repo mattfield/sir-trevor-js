@@ -3,19 +3,19 @@
   var templates;
 
   templates = {
-    title: '<label>Title</label><input maxlength="100" name="title" class="text-block input-string required" type="text"/><div class="buttons"><button href="#" class="add-description">Add Description</button><button href="#" class="add-image">Add Image</button></div>',
-    description: '<label>Description</label><div class="description" contenteditable="true" />',
+    description: '<label>Description</label><div class="description" contenteditable="true" /><div class="buttons"><button href="#" class="add-image">Add Image</button></div>',
     dropzone: '<div class="dropzone custom-list-block"><p>Drop images here</p><div class=\"input submit\"><input type=\"file\" multiple=\"multiple\" /></div><button>...or choose file(s)</button></div>',
     newItem: '<div class="add-item"><button href="#">Click to add a new item</button></div>',
     src: '<label>Source</label><input type="text" name="source" class="text-block input-string">',
     editor: '<div class=\"gallery-items\"><p>List Contents:</p><ul></ul></div>'
   };
 
-  SirTrevor.Blocks.Listunordered = SirTrevor.Block.extend({
-    title: 'List Unordered',
-    className: 'ul-custom-list',
+  SirTrevor.Blocks.Listnotitle = SirTrevor.Block.extend({
+    title: 'List No Title',
+    className: 'custom-no-title',
     editorHTML: templates.editor,
     toolbarEnabled: true,
+    dropzoneEnabled: false,
     loadData: function(data) {
       var _this = this;
 
@@ -27,15 +27,15 @@
       }
     },
     renderNewItem: function(item) {
-      var description, listEl, title,
+      var description, listEl,
         _this = this;
 
       description = void 0;
       listEl = $('<li>', {
         id: _.uniqueId('gallery-item'),
         "class": 'gallery-item',
-        html: templates.title
-      });
+        html: templates.description
+      }).append(templates.buttons);
       listEl.append($('<span>', {
         "class": 'delete',
         html: 'x',
@@ -48,16 +48,6 @@
         }
       }));
       this.$$('ul').append(listEl);
-      title = listEl.find('input[name="title"]').val(item.data.title);
-      title.on('blur', function() {
-        var blockData;
-
-        item.data.title = title.val();
-        blockData = listEl.data('block');
-        blockData.data.title = _this.instance._toMarkdown(title.val(), _this.type);
-        listEl.data('block', blockData);
-        return _this.reindexData;
-      });
       this.descriptionBlur = function(source) {
         var blockData, listItem;
 
@@ -68,18 +58,6 @@
         listItem.data('block', blockData);
         return _this.reindexData;
       };
-      listEl.find('.add-description').on('click', function(e) {
-        var tmpl;
-
-        e.preventDefault();
-        tmpl = templates.description;
-        if (listEl.find('.description').length > 0) {
-          alert('You have already created a description for this item');
-          return;
-        }
-        title.after(templates.description);
-        description = listEl.find('.description').text(item.data.text);
-      });
       listEl.find('.add-image').on('click', function(e) {
         e.preventDefault();
         if (listEl.find('.dropzone').length > 0 || listEl.find('img').length > 0) {
@@ -134,7 +112,6 @@
         data = {
           type: 'list-element',
           data: {
-            title: '',
             text: '',
             image: {
               url: '',
@@ -176,7 +153,6 @@
         data = {
           type: 'list-element',
           data: {
-            title: origData.data.title,
             text: origData.data.text,
             image: {
               url: 'https://secure.gravatar.com/avatar/99ad1f17dcf24f066980486d0a494a4f?s=100',

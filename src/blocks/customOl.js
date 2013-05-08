@@ -8,12 +8,12 @@
     dropzone: '<div class="dropzone custom-list-block"><p>Drop images here</p><div class=\"input submit\"><input type=\"file\" multiple=\"multiple\" /></div><button>...or choose file(s)</button></div>',
     newItem: '<div class="add-item"><button href="#">Click to add a new item</button></div>',
     src: '<label>Source</label><input type="text" name="source" class="text-block input-string">',
-    editor: '<div class=\"gallery-items\"><p>List Contents:</p><ul></ul></div>'
+    editor: '<div class=\"gallery-items\"><p>List Contents:</p><ol></ol></div>'
   };
 
-  SirTrevor.Blocks.Listunordered = SirTrevor.Block.extend({
-    title: 'List Unordered',
-    className: 'ul-custom-list',
+  SirTrevor.Blocks.Listordered = SirTrevor.Block.extend({
+    title: 'List Ordered',
+    className: 'ol-custom-list',
     editorHTML: templates.editor,
     toolbarEnabled: true,
     loadData: function(data) {
@@ -47,7 +47,7 @@
           }
         }
       }));
-      this.$$('ul').append(listEl);
+      this.$$('ol').append(listEl);
       title = listEl.find('input[name="title"]').val(item.data.title);
       title.on('blur', function() {
         var blockData;
@@ -115,7 +115,7 @@
       var _this = this;
 
       this.$el.prepend(templates.newItem);
-      this.$$('ul').sortable({
+      this.$$('ol').sortable({
         out: function(ev, ui) {
           $(this).sortable('refresh');
           return _this.reindexData();

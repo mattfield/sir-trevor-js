@@ -28,8 +28,7 @@ SirTrevor.Blocks.Video = SirTrevor.Block.extend({
   
   handleDropPaste: function(url){
     
-    if(_.isURI(url)) 
-    {
+    if(_.isURI(url)) {
       if (url.indexOf("youtu") != -1 || url.indexOf("vimeo") != -1) {
           
         var data = {},

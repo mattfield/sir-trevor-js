@@ -1317,6 +1317,396 @@
     var templates;
   
     templates = {
+      description: '<label>Description</label><div class="description" contenteditable="true" /><div class="buttons"><button href="#" class="add-image">Add Image</button></div>',
+      dropzone: '<div class="dropzone custom-list-block"><p>Drop images here</p><div class=\"input submit\"><input type=\"file\" multiple=\"multiple\" /></div><button>...or choose file(s)</button></div>',
+      newItem: '<div class="add-item"><button href="#">Click to add a new item</button></div>',
+      src: '<label>Source</label><input type="text" name="source" class="text-block input-string">',
+      editor: '<div class=\"gallery-items\"><p>List Contents:</p><ul></ul></div>'
+    };
+  
+    SirTrevor.Blocks.Listnotitle = SirTrevor.Block.extend({
+      title: 'List No Title',
+      className: 'custom-no-title',
+      editorHTML: templates.editor,
+      toolbarEnabled: true,
+      dropzoneEnabled: false,
+      loadData: function(data) {
+        var _this = this;
+  
+        if (_.isArray(data)) {
+          return _.each(data, function(item) {
+            _this.renderNewItem(item);
+            return _this.renderGalleryItem(item);
+          });
+        }
+      },
+      renderNewItem: function(item) {
+        var description, listEl,
+          _this = this;
+  
+        description = void 0;
+        listEl = $('<li>', {
+          id: _.uniqueId('gallery-item'),
+          "class": 'gallery-item',
+          html: templates.description
+        }).append(templates.buttons);
+        listEl.append($('<span>', {
+          "class": 'delete',
+          html: 'x',
+          click: function(e) {
+            halt(e);
+            if (confirm('Are you sure you want to delete this item?')) {
+              $(e.target).parent().remove();
+              return _this.reindexData();
+            }
+          }
+        }));
+        this.$$('ul').append(listEl);
+        this.descriptionBlur = function(source) {
+          var blockData, listItem;
+  
+          listItem = $(source.srcElement).parent();
+          console.log(listItem);
+          blockData = listItem.data('block');
+          blockData.data.text = _this.instance._toMarkdown($(source.srcElement).html(), _this.type);
+          listItem.data('block', blockData);
+          return _this.reindexData;
+        };
+        listEl.find('.add-image').on('click', function(e) {
+          e.preventDefault();
+          if (listEl.find('.dropzone').length > 0 || listEl.find('img').length > 0) {
+            return;
+          }
+          listEl.append(templates.dropzone);
+          listEl.find('.dropzone').find('button').bind('click', halt);
+          return listEl.find('.dropzone input').on('change', function(e) {
+            return _this.onDrop(e.currentTarget, listEl);
+          });
+        });
+        listEl.data('block', item);
+        return this.reindexData();
+      },
+      renderGalleryThumb: function(item, targetElement) {
+        var img, imgWrapper;
+  
+        if (_.isUndefined(item.data.image.url)) {
+          return false;
+        }
+        img = $('<img>', {
+          src: item.data.image.url
+        });
+        imgWrapper = $('<div>', {
+          "class": 'imgWrapper',
+          html: '<label>Image</label>'
+        }).append(img);
+        targetElement.data('block', item);
+        targetElement.append(imgWrapper);
+        return this.reindexData();
+      },
+      onBlockRender: function() {
+        var _this = this;
+  
+        this.$el.prepend(templates.newItem);
+        this.$$('ul').sortable({
+          out: function(ev, ui) {
+            $(this).sortable('refresh');
+            return _this.reindexData();
+          }
+        }).on('click', '.description', function() {
+          return $(this).focus();
+        }).on('blur', '.description', function(e) {
+          return _this.descriptionBlur(e);
+        });
+        $('.add-item').on('click', function(e) {
+          var data, struct;
+  
+          e.preventDefault();
+          _this.$editor.show();
+          struct = _this.getData();
+          data = {
+            type: 'list-element',
+            data: {
+              text: '',
+              image: {
+                url: '',
+                source: ''
+              }
+            }
+          };
+          if (!_.isArray(struct)) {
+            struct = [];
+          }
+          struct.push(data);
+          _this.setData(struct);
+          return _this.renderNewItem(data);
+        });
+      },
+      reindexData: function() {
+        var struct;
+  
+        struct = this.getData();
+        struct = [];
+        _.each(this.$$('li.gallery-item'), function(li) {
+          li = $(li);
+          return struct.push(li.data('block'));
+        });
+        return this.setData(struct);
+      },
+      onDrop: function(transferData, targetElement, existingData) {
+        var data, file, l, origData, source, struct, urlAPI,
+          _this = this;
+  
+        if (transferData.files.length > 0) {
+          l = transferData.files.length;
+          file = void 0;
+          urlAPI = (typeof URL !== 'undefined' ? URL : (typeof webkitURL !== 'undefined' ? webkitURL : null));
+          origData = targetElement.data('block');
+          this.loading();
+          this.$editor.show();
+          struct = this.getData();
+          data = {
+            type: 'list-element',
+            data: {
+              text: origData.data.text,
+              image: {
+                url: 'https://secure.gravatar.com/avatar/99ad1f17dcf24f066980486d0a494a4f?s=100',
+                source: ''
+              }
+            }
+          };
+          $('.dropzone').remove();
+          struct = data;
+          this.setData(struct);
+          this.renderGalleryThumb(data, targetElement);
+          this.ready();
+          targetElement.find('.imgWrapper').append(templates.src);
+          source = targetElement.find('input[name="source"]');
+          return source.on('blur', function(e) {
+            var blockData;
+  
+            blockData = targetElement.data('block');
+            blockData.data.image.source = source.val();
+            targetElement.data('block', blockData);
+            return _this.reindexData();
+          });
+        }
+      }
+    });
+  
+  }).call(this);
+  
+  // Generated by CoffeeScript 1.6.2
+  (function() {
+    var templates;
+  
+    templates = {
+      title: '<label>Title</label><input maxlength="100" name="title" class="text-block input-string required" type="text"/><div class="buttons"><button href="#" class="add-description">Add Description</button><button href="#" class="add-image">Add Image</button></div>',
+      description: '<label>Description</label><div class="description" contenteditable="true" />',
+      dropzone: '<div class="dropzone custom-list-block"><p>Drop images here</p><div class=\"input submit\"><input type=\"file\" multiple=\"multiple\" /></div><button>...or choose file(s)</button></div>',
+      newItem: '<div class="add-item"><button href="#">Click to add a new item</button></div>',
+      src: '<label>Source</label><input type="text" name="source" class="text-block input-string">',
+      editor: '<div class=\"gallery-items\"><p>List Contents:</p><ol></ol></div>'
+    };
+  
+    SirTrevor.Blocks.Listordered = SirTrevor.Block.extend({
+      title: 'List Ordered',
+      className: 'ol-custom-list',
+      editorHTML: templates.editor,
+      toolbarEnabled: true,
+      loadData: function(data) {
+        var _this = this;
+  
+        if (_.isArray(data)) {
+          return _.each(data, function(item) {
+            _this.renderNewItem(item);
+            return _this.renderGalleryItem(item);
+          });
+        }
+      },
+      renderNewItem: function(item) {
+        var description, listEl, title,
+          _this = this;
+  
+        description = void 0;
+        listEl = $('<li>', {
+          id: _.uniqueId('gallery-item'),
+          "class": 'gallery-item',
+          html: templates.title
+        });
+        listEl.append($('<span>', {
+          "class": 'delete',
+          html: 'x',
+          click: function(e) {
+            halt(e);
+            if (confirm('Are you sure you want to delete this item?')) {
+              $(e.target).parent().remove();
+              return _this.reindexData();
+            }
+          }
+        }));
+        this.$$('ol').append(listEl);
+        title = listEl.find('input[name="title"]').val(item.data.title);
+        title.on('blur', function() {
+          var blockData;
+  
+          item.data.title = title.val();
+          blockData = listEl.data('block');
+          blockData.data.title = _this.instance._toMarkdown(title.val(), _this.type);
+          listEl.data('block', blockData);
+          return _this.reindexData;
+        });
+        this.descriptionBlur = function(source) {
+          var blockData, listItem;
+  
+          listItem = $(source.srcElement).parent();
+          console.log(listItem);
+          blockData = listItem.data('block');
+          blockData.data.text = _this.instance._toMarkdown($(source.srcElement).html(), _this.type);
+          listItem.data('block', blockData);
+          return _this.reindexData;
+        };
+        listEl.find('.add-description').on('click', function(e) {
+          var tmpl;
+  
+          e.preventDefault();
+          tmpl = templates.description;
+          if (listEl.find('.description').length > 0) {
+            alert('You have already created a description for this item');
+            return;
+          }
+          title.after(templates.description);
+          description = listEl.find('.description').text(item.data.text);
+        });
+        listEl.find('.add-image').on('click', function(e) {
+          e.preventDefault();
+          if (listEl.find('.dropzone').length > 0 || listEl.find('img').length > 0) {
+            return;
+          }
+          listEl.append(templates.dropzone);
+          listEl.find('.dropzone').find('button').bind('click', halt);
+          return listEl.find('.dropzone input').on('change', function(e) {
+            return _this.onDrop(e.currentTarget, listEl);
+          });
+        });
+        listEl.data('block', item);
+        return this.reindexData();
+      },
+      renderGalleryThumb: function(item, targetElement) {
+        var img, imgWrapper;
+  
+        if (_.isUndefined(item.data.image.url)) {
+          return false;
+        }
+        img = $('<img>', {
+          src: item.data.image.url
+        });
+        imgWrapper = $('<div>', {
+          "class": 'imgWrapper',
+          html: '<label>Image</label>'
+        }).append(img);
+        targetElement.data('block', item);
+        targetElement.append(imgWrapper);
+        return this.reindexData();
+      },
+      onBlockRender: function() {
+        var _this = this;
+  
+        this.$el.prepend(templates.newItem);
+        this.$$('ol').sortable({
+          out: function(ev, ui) {
+            $(this).sortable('refresh');
+            return _this.reindexData();
+          }
+        }).on('click', '.description', function() {
+          return $(this).focus();
+        }).on('blur', '.description', function(e) {
+          return _this.descriptionBlur(e);
+        });
+        $('.add-item').on('click', function(e) {
+          var data, struct;
+  
+          e.preventDefault();
+          _this.$editor.show();
+          struct = _this.getData();
+          data = {
+            type: 'list-element',
+            data: {
+              title: '',
+              text: '',
+              image: {
+                url: '',
+                source: ''
+              }
+            }
+          };
+          if (!_.isArray(struct)) {
+            struct = [];
+          }
+          struct.push(data);
+          _this.setData(struct);
+          return _this.renderNewItem(data);
+        });
+      },
+      reindexData: function() {
+        var struct;
+  
+        struct = this.getData();
+        struct = [];
+        _.each(this.$$('li.gallery-item'), function(li) {
+          li = $(li);
+          return struct.push(li.data('block'));
+        });
+        return this.setData(struct);
+      },
+      onDrop: function(transferData, targetElement, existingData) {
+        var data, file, l, origData, source, struct, urlAPI,
+          _this = this;
+  
+        if (transferData.files.length > 0) {
+          l = transferData.files.length;
+          file = void 0;
+          urlAPI = (typeof URL !== 'undefined' ? URL : (typeof webkitURL !== 'undefined' ? webkitURL : null));
+          origData = targetElement.data('block');
+          this.loading();
+          this.$editor.show();
+          struct = this.getData();
+          data = {
+            type: 'list-element',
+            data: {
+              title: origData.data.title,
+              text: origData.data.text,
+              image: {
+                url: 'https://secure.gravatar.com/avatar/99ad1f17dcf24f066980486d0a494a4f?s=100',
+                source: ''
+              }
+            }
+          };
+          $('.dropzone').remove();
+          struct = data;
+          this.setData(struct);
+          this.renderGalleryThumb(data, targetElement);
+          this.ready();
+          targetElement.find('.imgWrapper').append(templates.src);
+          source = targetElement.find('input[name="source"]');
+          return source.on('blur', function(e) {
+            var blockData;
+  
+            blockData = targetElement.data('block');
+            blockData.data.image.source = source.val();
+            targetElement.data('block', blockData);
+            return _this.reindexData();
+          });
+        }
+      }
+    });
+  
+  }).call(this);
+  
+  // Generated by CoffeeScript 1.6.2
+  (function() {
+    var templates;
+  
+    templates = {
       title: '<label>Title</label><input maxlength="100" name="title" class="text-block input-string required" type="text"/><div class="buttons"><button href="#" class="add-description">Add Description</button><button href="#" class="add-image">Add Image</button></div>',
       description: '<label>Description</label><div class="description" contenteditable="true" />',
       dropzone: '<div class="dropzone custom-list-block"><p>Drop images here</p><div class=\"input submit\"><input type=\"file\" multiple=\"multiple\" /></div><button>...or choose file(s)</button></div>',
@@ -1330,11 +1720,6 @@
       className: 'ul-custom-list',
       editorHTML: templates.editor,
       toolbarEnabled: true,
-      toData: function(data) {
-        var struct;
-  
-        return struct = this.$el.data('block');
-      },
       loadData: function(data) {
         var _this = this;
   
@@ -1939,71 +2324,6 @@
   		return html
     }
   
-  });
-  var video_drop_template = '<p>Drop video link here</p><div class="input text"><label>or paste URL:</label><input type="text" class="paste-block"></div>';
-  var video_regex = /http[s]?:\/\/(?:www.)?(?:(vimeo).com\/(.*))|(?:(youtu(?:be)?).(?:be|com)\/(?:watch\?v=)?([^&]*)(?:&(?:.))?)/;
-  
-  SirTrevor.Blocks.Video = SirTrevor.Block.extend({ 
-    
-    title: "Video",
-    className: "video",
-    dropEnabled: true,
-    
-    dropzoneHTML: video_drop_template,
-    
-    loadData: function(data){    
-      if(data.source == "youtube" || data.source == "youtu") {
-        this.$editor.html("<iframe src=\""+window.location.protocol+"//www.youtube.com/embed/" + data.remote_id + "\" width=\"580\" height=\"320\" frameborder=\"0\" allowfullscreen></iframe>");
-      } else if(data.source == "vimeo") {
-        this.$editor.html("<iframe src=\""+window.location.protocol+"//player.vimeo.com/video/" + data.remote_id + "?title=0&byline=0\" width=\"580\" height=\"320\" frameborder=\"0\"></iframe>");
-      }
-    },
-    
-    onContentPasted: function(event){
-      // Content pasted. Delegate to the drop parse method
-      var input = $(event.target),
-          val = input.val();
-      
-      // Pass this to the same handler as onDrop
-      this.handleDropPaste(val);
-    },
-    
-    handleDropPaste: function(url){
-      
-      if(_.isURI(url)) 
-      {
-        if (url.indexOf("youtu") != -1 || url.indexOf("vimeo") != -1) {
-            
-          var data = {},
-          videos = url.match(video_regex);
-            
-          // Work out the source and extract ID
-          if(videos[3] !== undefined) {
-            data.source = videos[3];
-            data.remote_id = videos[4];
-          } else if (videos[1] !== undefined) {
-            data.source = videos[1];
-            data.remote_id = videos[2];
-          }
-        
-          if (data.source == "youtu") { 
-            data.source = "youtube";
-          }
-          
-          // Save the data
-          this.setData(data);
-          
-          // Render  
-          this._loadData();  
-        }
-      }
-      
-    },
-    
-    onDrop: function(transferData){
-      var url = transferData.getData('text/plain');
-      this.handleDropPaste(url);
-    }
   });
   /* Default Formatters */
   /* Our base formatters */

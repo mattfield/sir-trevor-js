@@ -2,7 +2,7 @@
 
   var editor = new SirTrevor.Editor({
     el: $('.sir-trevor'),
-    blockTypes: ['Listunordered']
+    blockTypes: ['Listunordered', 'Listordered', 'Listnotitle']
   });
 
   $('form').on('submit', function(e){
