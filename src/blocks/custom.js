@@ -59,16 +59,15 @@
 
         item.data.title = title.val();
         blockData = listEl.data('block');
-        blockData.data.title = title.val();
+        blockData.data.title = _this.instance._toMarkdown(title.val(), _this.type);
         listEl.data('block', blockData);
-        return this.reindexData;
+        return _this.reindexData;
       });
       this.descriptionBlur = function(source) {
         var blockData, listItem;
 
         listItem = $(source.srcElement).parent();
-        console.log(listItem, listItem.data('block'));
-        item.data.text = $(source.srcElement).html();
+        console.log(listItem);
         blockData = listItem.data('block');
         blockData.data.text = _this.instance._toMarkdown($(source.srcElement).html(), _this.type);
         listItem.data('block', blockData);
@@ -127,8 +126,7 @@
           return _this.reindexData();
         }
       }).on('click', '.description', function() {
-        $(this).focus();
-        return document.execCommand('insertBrOnReturn', false, true);
+        return $(this).focus();
       }).on('blur', '.description', function(e) {
         return _this.descriptionBlur(e);
       });
