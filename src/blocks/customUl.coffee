@@ -1,10 +1,13 @@
 templates =
-  title: '<label>Title</label><input maxlength="100" name="title" class="text-block input-string required" type="text"/><div class="buttons"><button href="#" class="add-description">Add Description</button><button href="#" class="add-image">Add Image</button></div>'
+  title: '<label>Title</label><input maxlength="100" name="title" class="text-block input-string required" type="text"/><div class="buttons"><button href="#" class="add-description">Add Description</button><button href="#" class="add-image">Add Image</button><button href="#" class="add-video">Add Video</button></div>'
   description: '<label>Description</label><div class="description" contenteditable="true" />'
   dropzone: '<div class="dropzone custom-list-block"><p>Drop images here</p><div class=\"input submit\"><input type=\"file\" multiple=\"multiple\" /></div><button>...or choose file(s)</button></div>'
   newItem: '<div class="add-item"><button href="#">Click to add a new item</button></div>'
   src: '<label>Source</label><input type="text" name="source" class="text-block input-string">'
   editor: '<div class=\"gallery-items\"><p>List Contents:</p><ul></ul></div>'
+  videoDropzone: '<div class="dropzone custom-list-block"><p>Drop video link here</p><div class="input text"><label>or paste URL:</label><input type="text" class="paste-block"></div>'
+
+videoRegex = /http[s]?:\/\/(?:www.)?(?:(vimeo).com\/(.*))|(?:(youtu(?:be)?).(?:be|com)\/(?:watch\?v=)?([^&]*)(?:&(?:.))?)/
 
 SirTrevor.Blocks.Listunordered = SirTrevor.Block.extend
   title: 'List Unordered'
@@ -16,6 +19,35 @@ SirTrevor.Blocks.Listunordered = SirTrevor.Block.extend
       _.each data, (item) =>
         @renderNewItem item
         @renderGalleryItem item
+        @renderNewVideo item
+
+  onContentPasted: (e) ->
+    input = $ e.target
+    parentBlock = input.parent '.gallery-item'
+    val = input.val()
+
+    @handleDropPaste parentBlock, val
+
+  handleDropPaste: (block, url) ->
+    if _.isURI url
+      if url.indexOf 'youtu' isnt -1 or url.indexOf 'vimeo' isnt -1
+        blockData = block.data 'block'
+        
+        videos = url.match videoRegex
+
+        if videos[3] isnt undefined
+          data.video.source = videos[3]
+          data.video.remote_id = videos[4]
+        else if videos[1] isnt undefined
+          data.video.source = videos[1]
+          data.video.remote_id = videos[2]
+
+        blockData.video.source = 'youtube' if blockData.video.source is 'youtu'
+        block.data('block', blockData)
+
+      @setData blockData
+      @reindexData
+      @_loadData()
 
   renderNewItem: (item) ->
     description = undefined
@@ -82,6 +114,15 @@ SirTrevor.Blocks.Listunordered = SirTrevor.Block.extend
 
       listEl.append templates.dropzone
 
+      # TODO: Handle video paste
+
+    listEl.find('.add-video').on 'click', (e) ->
+      e.preventDefault()
+
+      alert 'Only one type of media per item' if listEl.find('img').length > 0
+
+      listEl.append templates.videoDropzone
+
       listEl.find('.dropzone').find('button').bind 'click', halt
 
       listEl.find('.dropzone input').on 'change', (e) ->
@@ -134,6 +175,9 @@ SirTrevor.Blocks.Listunordered = SirTrevor.Block.extend
           image:
             url: ''
             source: ''
+          video:
+            source: ''
+            remote_id: ''
 
       struct = [] if !_.isArray struct
 
@@ -154,6 +198,7 @@ SirTrevor.Blocks.Listunordered = SirTrevor.Block.extend
     @setData struct
 
   onDrop: (transferData, targetElement, existingData) ->
+    console.log transferData.getData 'text/plain'
     if transferData.files.length > 0
       l = transferData.files.length
       file = undefined
